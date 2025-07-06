@@ -1,70 +1,91 @@
-@extends('layouts.app')
+@extends('kasir.main')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
-    <h2 class="text-2xl font-semibold mb-4">Transaksi Baru</h2>
+<div class="max-w-5xl mx-auto">
+    <h2 class="text-2xl font-bold mb-4">Transaksi Baru</h2>
 
-    @if(session('success'))
-    <div class="bg-green-200 text-green-800 p-3 rounded mb-3">{{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-    <div class="bg-red-200 text-red-800 p-3 rounded mb-3">{{ session('error') }}</div>
-    @endif
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {{-- 📦 Daftar Barang --}}
+        <div class="bg-white rounded shadow p-4">
+            <h3 class="text-lg font-semibold mb-3">Pilih Barang</h3>
+            <ul class="max-h-[550px] overflow-y-auto pr-2">
 
-    @if(session('error'))
-    <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
-        {{ session('error') }}
-    </div>
-    @endif
+                @foreach($products as $product)
+                <li class="flex justify-between items-center border-b py-2">
+                    <div>
+                        <p class="font-medium">{{ $product->nama_barang }}<span class="text-xs text-gray-400">| Stok: {{ $product->stok }}</span></p>
+                        <p class="text-sm text-gray-500">
+                            Rp {{ number_format($product->harga) }}
+                        </p>
+                    </div>
 
-
-    <form method="POST" action="{{ route('kasir.transaction.store') }}">
-        @csrf
-
-        <table class="w-full table-auto border mb-4">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="p-2 border">Pilih</th>
-                    <th class="p-2 border">Nama Barang</th>
-                    <th class="p-2 border">Harga</th>
-                    <th class="p-2 border">Stok</th>
-                    <th class="p-2 border">Qty</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($products as $index => $product)
-                <tr>
-                    <td class="p-2 border text-center">
-                        <input type="checkbox" name="items[{{ $index }}][product_id]" value="{{ $product->id }}">
-                    </td>
-                    <td class="p-2 border">{{ $product->nama_barang }}</td>
-                    <td class="p-2 border">Rp {{ number_format($product->harga) }}</td>
-                    <td class="p-2 border">{{ $product->stok }}</td>
-                    <td class="p-2 border">
-                        <input type="number" name="items[{{ $index }}][qty]" class="w-20 border p-1" min="1" value="1">
-                    </td>
-                </tr>
+                    <button type="button"
+                        class="text-white bg-blue-600 px-3 py-1 rounded text-sm">+ Tambah</button>
+                </li>
                 @endforeach
-            </tbody>
-        </table>
-
-        <div class="mb-4">
-            <label class="block font-medium">Bayar</label>
-            <input type="number" name="bayar" class="w-full border p-2 rounded" required>
+            </ul>
         </div>
 
-        <div class="flex justify-end">
-            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded">Simpan Transaksi</button>
+
+        {{-- 🛒 Keranjang dan Ringkasan --}}
+        <div class="flex flex-col gap-6 sticky top-4 self-start">
+            {{-- 🛒 Keranjang Belanja --}}
+            <div class="bg-white rounded shadow p-4">
+                <h3 class="text-lg font-semibold mb-3">Keranjang Belanja</h3>
+
+                <form method="POST" action="{{ route('kasir.transaction.store') }}" onsubmit="return prepareForm()">
+                    @csrf
+
+
+                    <table class="w-full text-sm mb-4" id="cartTable">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="p-2 text-left">Produk</th>
+                                <th class="p-2">Harga</th>
+                                <th class="p-2">Qty</th>
+                                <th class="p-2">Subtotal</th>
+                                <th class="p-2"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartBody">
+                            <tr id="emptyCartRow">
+                                <td colspan="5" class="text-center text-gray-500 italic py-4">Keranjang kosong</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+
+            {{-- 💰 Ringkasan Belanja --}}
+            <div class="bg-white rounded shadow p-4">
+                <h3 class="text-lg font-semibold mb-3">Ringkasan</h3>
+
+                <div class="mb-4">
+                    <p>Subtotal: Rp <span id="subtotal">0</span></p>
+                    <p>Total: <strong>Rp <span id="total">0</span></strong></p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block font-semibold">Dibayar (Rp)</label>
+                    <input type="number" name="bayar" id="bayarInput" class="w-full border p-2 rounded" required
+                        oninput="updateKembalian()">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block font-semibold">Kembalian</label>
+                    <p class="text-xl font-bold text-green-700">Rp <span id="kembalian">0</span></p>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">💵 Bayar</button>
+                    <button type="button" onclick="clearCart()" class="bg-red-600 text-white px-4 py-2 rounded">❌ Batal</button>
+                </div>
+
+                <input type="hidden" name="bayar" value="0">
+            </div>
         </div>
-
-        @if(session('transaction_id'))
-        <a href="{{ route('kasir.transaksi.print', session('transaction_id')) }}"
-            target="_blank" class="bg-green-500 text-white px-3 py-1 rounded inline-block mt-4">
-            Cetak Struk PDF
-        </a>
-        @endif
+    </div>
 
 
-    </form>
 </div>
 @endsection

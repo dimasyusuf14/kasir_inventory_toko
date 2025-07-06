@@ -157,6 +157,12 @@ class TransactionController extends Controller
         $labels = $data->pluck('tanggal');
         $totals = $data->pluck('total');
 
-        return view('admin.dashboard', compact('labels', 'totals'));
+        return view('admin.dashboard.index', compact('labels', 'totals'));
+    }
+
+    public function detail($id)
+    {
+        $transaction = Transaction::with(['items.product', 'user'])->findOrFail($id);
+        return view('kasir.transactions.detail', compact('transaction'));
     }
 }
