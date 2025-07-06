@@ -19,6 +19,7 @@
         <table class="min-w-full text-sm text-center">
             <thead class="bg-gray-100 text-gray-700 uppercase">
                 <tr>
+                    <th class="px-4 py-3 border">No</th>
                     <th class="px-4 py-3 border">ID</th>
                     <th class="px-4 py-3 border">Tanggal</th>
                     <th class="px-4 py-3 border">Total</th>
@@ -28,6 +29,7 @@
             <tbody class="text-gray-700">
                 @forelse($transactions as $trx)
                 <tr class="border-t hover:bg-gray-50">
+                    <td class="px-4 py-2 border bg-gray-100 w-5">{{ $loop->iteration }}</td>
                     <td class="px-4 py-2 border">{{ $trx->id }}</td>
                     <td class="px-4 py-2 border">{{ $trx->created_at->translatedFormat('j F Y, H:i') }}</td>
                     <td class="px-4 py-2 border">Rp {{ number_format($trx->total_harga) }}</td>

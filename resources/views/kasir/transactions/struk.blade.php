@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <h3 class="text-center">Struk Kasir Toko</h3>
+    <h3 class="text-center">Toko Yusuf Alexandre</h3>
     <p>No Transaksi: {{ $transaction->id }}<br>
     Kasir: {{ $transaction->user->name }}<br>
     Tanggal: {{ $transaction->created_at->format('d/m/Y H:i') }}</p>
@@ -21,6 +21,7 @@
             <tr>
                 <th>Barang</th>
                 <th>Qty</th>
+                <th>Harga Satuan</th>
                 <th>Subtotal</th>
             </tr>
         </thead>
@@ -29,6 +30,7 @@
             <tr>
                 <td>{{ $item->product->nama_barang }}</td>
                 <td>{{ $item->qty }}</td>
+                <td>Rp {{ number_format($item->product->harga) }}</td>
                 <td>Rp {{ number_format($item->subtotal) }}</td>
             </tr>
             @endforeach

@@ -9,6 +9,7 @@
             <tr class="bg-gray-100">
                 <th class="text-left p-1">Barang</th>
                 <th class="text-center p-1">Qty</th>
+                <th class="text-center p-1">Harga(pcs)</th>
                 <th class="text-right p-1">Subtotal</th>
             </tr>
         </thead>
@@ -17,6 +18,7 @@
             <tr>
                 <td class="p-1">{{ $item->product->nama_barang }}</td>
                 <td class="text-center p-1">{{ $item->qty }}</td>
+                <td class="text-right p-1">Rp {{ number_format($item->product->harga) }}</td>
                 <td class="text-right p-1">Rp {{ number_format($item->subtotal) }}</td>
             </tr>
             @endforeach
